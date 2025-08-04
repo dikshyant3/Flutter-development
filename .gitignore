@@ -1,0 +1,46 @@
+# Flutter/Dart/Pub related
+**/build/
+**/.dart_tool/
+**/.packages
+**/.pub-cache/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.melos_tool/
+
+# iOS/macOS
+**/Pods/
+**/Runner.xcworkspace/
+**/.symlinks/
+**/Flutter/Generated.xcconfig
+**/Flutter/ephemeral/
+**/xcuserdata/
+**/.generated/
+**/.xcworkspacedata
+**/project.xcworkspace/
+**/xcshareddata/
+
+# macOS specific
+**/macos/Pods/
+**/macos/Runner.xcworkspace/
+
+# Android
+**/android/.gradle/
+**/android/build/
+**/android/local.properties
+**/android/captures/
+
+# IDEs
+**/.idea/
+**/.vscode/
+*.iml
+
+# Others
+*.log
+*.lock
+*.tmp
+*.DS_Store
+*.bak
+*.orig
+
+# Coverage
+**/coverage/
