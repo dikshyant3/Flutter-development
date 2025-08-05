@@ -3,9 +3,32 @@ import 'package:fourth_week_ui/widgets/streak_card.dart';
 import 'package:fourth_week_ui/widgets/breathing_card.dart';
 // import 'package:fourth_week_ui/widgets/reminder_card.dart';
 import 'package:fourth_week_ui/widgets/health_indicator.dart';
+import 'package:fourth_week_ui/widgets/navigation.dart';
+import 'reports_screen.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int selectedIndex = 0;
+
+  void _onNavigationTap(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+
+    // Navigate to Reports page when Reports tab is tapped
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ReportsScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,8 +118,12 @@ class MyHomePage extends StatelessWidget {
             const SizedBox(height: 20),
             const BreathingCard()
           ],
-        )
-      )
+        ),
+      ),
+      bottomNavigationBar: BottomNavigation(
+        selectedIndex: selectedIndex,
+        onTap: _onNavigationTap,
+      ),
     );
   }
 }
