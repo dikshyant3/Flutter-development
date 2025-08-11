@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fifth_ui/screens/achievement_screen.dart';
+// import 'package:fifth_ui/screens/achievement_screen.dart';
+import 'package:fifth_ui/screens/notifications_screen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const AchievementsPage(),
+      home: const NotificationsScreen(),
     );
   }
 }
