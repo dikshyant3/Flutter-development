@@ -1,3 +1,4 @@
+import 'package:fifth_ui/core/widgets/custom_button_widget.dart';
 import 'package:fifth_ui/models/notifications_model.dart';
 import 'package:flutter/material.dart';
 
@@ -141,27 +142,19 @@ class NotificationsWidget extends StatelessWidget {
                 if(notification.hasActions) ...[
                   SizedBox(height: 16.0),
                   Row(
+                    spacing: 12.0,
                     children: [
-                      OutlinedButton(
-                        onPressed: (){
-                          print('Declined ${notification.name}');
-                        }, 
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.grey.shade700,
-                          side: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        child: Text('Decline'),
+                      CustomButtonWidget(
+                        buttonName: "Decline", 
+                        buttonColor: Colors.white, 
+                        textColor: Colors.black54, 
+                        onPressed: () {}
                       ),
-                      SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          print('Accepted ${notification.name}');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: Text('Accept'),
+                      CustomButtonWidget(
+                        buttonName: "Accept", 
+                        buttonColor: Colors.blueAccent, 
+                        textColor: Colors.white,
+                         onPressed: () {}
                       ),
                     ],
                   )
@@ -174,3 +167,4 @@ class NotificationsWidget extends StatelessWidget {
     );
   }
 }
+
