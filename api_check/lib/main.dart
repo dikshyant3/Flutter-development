@@ -1,5 +1,6 @@
-import 'package:api_check/services/send_post.dart';
+// import 'package:api_check/services/send_post.dart';
 import 'package:flutter/material.dart';
+import 'package:api_check/screen/posts_home_screen.dart';
 // import 'package:api_check/screen/home.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: CreatePostPage(),
+      home: PostsHomePage(),
     );
   }
 }
