@@ -99,7 +99,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
-        child: ValueListenableBuilder(
+        child: ValueListenableBuilder<bool>(
           valueListenable: _autoValidate,
           builder: (context, value, child) {
             return Form(
@@ -247,7 +247,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
                   // Submit Button
                   SizedBox(
                     height: 54,
-                    child: ValueListenableBuilder(
+                    child: ValueListenableBuilder<bool>(
                       valueListenable: _isLoading,
                       builder: (context, isLoading, child) {
                         return ElevatedButton(
