@@ -1,7 +1,6 @@
-import 'package:api_check/core/network/api_client.dart';
-import 'package:api_check/services/api_service.dart';
+import 'package:api_check/providers/posts_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:api_check/models/post_model.dart';
+import 'package:provider/provider.dart';
 
 class PostWidget extends StatefulWidget {
   const PostWidget({super.key});
@@ -11,43 +10,23 @@ class PostWidget extends StatefulWidget {
 }
 
 class _PostWidgetState extends State<PostWidget> {
-  final ValueNotifier<List<PostModel>> postsNotifier = ValueNotifier([]);
-  final ValueNotifier<bool> isLoadingNotifier = ValueNotifier(true);
+  // final ValueNotifier<List<PostModel>> postsNotifier = ValueNotifier([]);
+  // final ValueNotifier<bool> isLoadingNotifier = ValueNotifier(true);
 
   // formData response
-  final ValueNotifier<String> formDataResponseNotifier = ValueNotifier(
-    'Sending Form Data....',
-  );
+  // final ValueNotifier<String> formDataResponseNotifier = ValueNotifier(
+  //   'Sending Form Data....',
+  // );
 
   @override
   void initState() {
     super.initState();
-    fetchPosts();
-    loadFormData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<PostsProvider>(context, listen: false);
+      provider.fetchPosts();
+      provider.loadFormData();
+    });
   }
-
-  Future<void> loadFormData() async{
-    var response = await sendFormData(title: 'Title', body: 'body', userId: 1);
-    formDataResponseNotifier.value = response.toString();
-  }
-
-    void fetchPosts() async{
-      try {
-        var response = await DioClient.dio.get('posts');
-
-        if (response.data is List){
-          postsNotifier.value = (response.data as List).map((json)=> PostModel.fromJson(json)).toList();
-        }
-        else {
-          postsNotifier.value = [];
-        }
-      } catch (e) {
-        print('Error while fetching the posts $e');
-        postsNotifier.value = [];
-      } finally {
-        isLoadingNotifier.value = false;
-      }
-    }
 
   @override
   Widget build(BuildContext context) {
@@ -55,84 +34,122 @@ class _PostWidgetState extends State<PostWidget> {
       appBar: AppBar(
         title: const Text(
           'API CHECK',
-          style:TextStyle(
-            fontSize: 12,
-            color: Colors.amberAccent,
-          )
-          ),
-      ),
-      body: Column(children: [
-        ValueListenableBuilder<String>(
-          valueListenable: formDataResponseNotifier, 
-          builder: (context, response, _) {
-            return Text(
-              response,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
-              ),
-            );
-          },
+          style: TextStyle(fontSize: 12, color: Colors.amberAccent),
         ),
-
-        // Posts List
-        Expanded(
-          child: ValueListenableBuilder<bool>(
-            valueListenable: isLoadingNotifier, 
-            builder: (context, isLoading, _){
-              if(isLoading){
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-
-              return ValueListenableBuilder<List<PostModel>>(
-                valueListenable: postsNotifier, 
-                builder: (context, posts, _){
-                  return ListView.builder(
-                    itemCount: posts.length,
-                    itemBuilder: (context, index){
-                      final post = posts[index];
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 12.0,
-                          vertical: 6.0,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'User ID: ${post.userId}',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                  'ID: ${post.id}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  post.title,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                Text(post.body),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
+      ),
+      body: Column(
+        children: [
+          Consumer<PostsProvider>(
+            builder: (context, postsProvider, child) {
+              return Text(
+                postsProvider.responseMessage.isEmpty
+                    ? 'Sending Form data ...'
+                    : postsProvider.responseMessage,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
               );
             },
-          )
-        )
-      ],)
+          ),
+
+          // Posts List
+          Expanded(
+            child: Consumer<PostsProvider>(
+              builder: (context, postsProvider, child) {
+                if (postsProvider.isLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (postsProvider.errorMessage.isNotEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          postsProvider.errorMessage,
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => postsProvider.fetchPosts(),
+                          child: const Text("Retry"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final posts = postsProvider.allPosts;
+
+                return ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+
+                    final isNewPost =
+                        index < postsProvider.submittedPosts.length;
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 12.0,
+                        vertical: 6.0,
+                      ),
+                      elevation: isNewPost ? 4 : 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'User ID: ${post.userId}',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                Spacer(),
+                                if (isNewPost)
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      "New",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            Text(
+                              'ID: ${post.id}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              post.title,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            Text(post.body),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

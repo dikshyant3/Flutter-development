@@ -24,7 +24,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
   void _sendPost() async {
 
-    // _autoValidate.value = true;
+    setState(() {
+    _autoValidate = true;
+    });
 
     if (!_formKey.currentState!.validate()) {
       return;
@@ -44,7 +46,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
         _titleController.clear();
         _bodyController.clear();
 
-        // _autoValidate.value = false;
+        setState(() {
+        _autoValidate = false;
+        });
       } else {
         _showSnackBar("Failed to send post", Colors.red);
     }
