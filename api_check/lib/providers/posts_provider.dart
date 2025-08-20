@@ -11,6 +11,7 @@ class PostsProvider extends ChangeNotifier{
   bool _isSubmitting = false;
   String _errorMessage = "";
   String _responseMessage = ""; 
+  // bool _autoValidate = false;
 
   List<PostModel> get submittedPosts => _submittedPosts;
   List<PostModel> get fetchedPosts => _fetchedPosts;
@@ -18,6 +19,12 @@ class PostsProvider extends ChangeNotifier{
   String get responseMessage => _responseMessage;
   String get errorMessage => _errorMessage;
   bool get isSubmitting => _isSubmitting;
+  // bool get autoValidate => _autoValidate;
+
+  // void setAutoValidate(bool value){
+  //   _autoValidate = value;
+  //   notifyListeners();
+  // }
 
   List<PostModel> get allPosts{
     return [...submittedPosts, ...fetchedPosts];
