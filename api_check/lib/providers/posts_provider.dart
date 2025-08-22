@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:api_check/core/network/api_client.dart';
 import 'package:api_check/models/post_model.dart';
 import 'package:api_check/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PostsProvider extends ChangeNotifier{
+
+  static const String _submittedPostsKey = 'submitted_posts';
+
   // ignore: prefer_final_fields
   List<PostModel> _submittedPosts = [];
   List<PostModel> _fetchedPosts = [];
@@ -11,6 +17,7 @@ class PostsProvider extends ChangeNotifier{
   bool _isSubmitting = false;
   String _errorMessage = "";
   String _responseMessage = ""; 
+  SharedPreferences? _prefs;
   // bool _autoValidate = false;
 
   List<PostModel> get submittedPosts => _submittedPosts;
@@ -19,6 +26,7 @@ class PostsProvider extends ChangeNotifier{
   String get responseMessage => _responseMessage;
   String get errorMessage => _errorMessage;
   bool get isSubmitting => _isSubmitting;
+
   // bool get autoValidate => _autoValidate;
 
   // void setAutoValidate(bool value){
@@ -30,6 +38,56 @@ class PostsProvider extends ChangeNotifier{
     return [...submittedPosts, ...fetchedPosts];
   }
 
+  Future<void> initProvider() async{
+    _prefs = await SharedPreferences.getInstance();
+    await loadSubmittedPosts();
+  }
+
+  Future<void> loadSubmittedPosts() async{
+    try {
+      final String? postsJson = _prefs?.getString(_submittedPostsKey);
+      if (postsJson != null && postsJson.isNotEmpty){
+        final List<dynamic> postsList = jsonDecode(postsJson);
+        _submittedPosts = postsList.map((postMap)=>PostModel.fromJson(postMap)).toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error loading the posts: $e');
+      await _prefs?.remove(_submittedPostsKey);
+    }
+  }
+
+  Future<void> saveSubmittedPosts() async{
+    try {
+      final List<Map<String, dynamic>> postsMapList = _submittedPosts.map((post)=>{
+        'userId': post.userId,
+        'id': post.id,
+        'title': post.title,
+        'body': post.body,
+      }).toList();
+      final String postsJson = jsonEncode(postsMapList);
+      await _prefs?.setString(_submittedPostsKey, postsJson);
+    } catch (e) {
+      print("Error submitting the posts: $e");
+    }
+  }
+
+  Future<void> clearSavedData() async{
+    await _prefs?.remove(_submittedPostsKey);
+    _submittedPosts.clear();
+    notifyListeners();
+  }
+
+  Future<void> removePost(int postId) async {
+    try {
+      _submittedPosts.removeWhere((post) => post.id == postId);
+      await saveSubmittedPosts();
+      notifyListeners();
+    } catch (e) {
+      print('Error removing post: $e');
+    }
+  }
+  
     Future<void> fetchPosts() async{
       _isLoading = true;
       _errorMessage = "";
@@ -80,9 +138,11 @@ class PostsProvider extends ChangeNotifier{
 
 
         _submittedPosts.insert(0, newPost);
+        await saveSubmittedPosts();
         notifyListeners();
         return true;
       }
+      return false;
       }
       catch(e){
         _responseMessage = "Error: $e";
@@ -91,7 +151,6 @@ class PostsProvider extends ChangeNotifier{
         _isSubmitting = false;
         notifyListeners();
       }
-      return true;
       }
 
       Future<void> loadFormData() async{
